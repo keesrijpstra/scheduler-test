@@ -2,13 +2,20 @@
 
 namespace App\Models;
 
+use App\Enums\StatusType;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rules\Enum;
 
 class WorkOrder extends Model
 {
+
+    protected $casts = [
+        'status' => StatusType::class,
+    ];
+
     public function timeEntries()
     {
-        return $this->hasMany(TimeEntry::class);
+        return $this->hasMany(TimeEntry::class, 'workorder_id');
     }
 
     public function assignedTo()
