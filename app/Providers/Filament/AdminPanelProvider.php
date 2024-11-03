@@ -51,6 +51,10 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->plugins([
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                \TomatoPHP\FilamentUsers\FilamentUsersPlugin::make()
+            ])
             ->authMiddleware([
                 Authenticate::class,
             ]);
