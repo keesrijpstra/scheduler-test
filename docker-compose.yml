@@ -17,6 +17,11 @@ services:
             XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
             XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
+            PHP_OPCACHE_ENABLE: 1
+            PHP_OPCACHE_VALIDATE_TIMESTAMPS: 1
+            PHP_MEMORY_LIMIT: 512M
+            NGINX_FASTCGI_BUFFER_SIZE: "16k"
+            NGINX_FASTCGI_BUFFERS: "4 16k"
         volumes:
             - '.:/var/www/html'
         networks:
