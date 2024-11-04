@@ -27,4 +27,11 @@ class WorkOrder extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($workOrder) {
+            $workOrder->created_by = auth()->id();
+        });
+    }
 }

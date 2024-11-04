@@ -60,10 +60,6 @@ class WorkOrderResource extends Resource
                     ->label('Eind Datum')
                     ->native(false)
                     ->after('start_date'),
-
-                Forms\Components\Select::make('created_by')
-                    ->options(fn() => \App\Models\User::pluck('name', 'id')->toArray())
-                    ->required(),
             ]);
     }
 
