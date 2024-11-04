@@ -12,6 +12,7 @@ use Filament\Forms\Form;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -36,6 +37,14 @@ class WorkOrderResource extends Resource
                 Forms\Components\RichEditor::make('description')
                     ->columnSpanFull(),
 
+                Forms\Components\Select::make('assignedUsers')
+                    ->relationship('assignedUsers', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->searchable()
+                    ->label('Toegewezen aan')
+                    ->columnSpanFull(),
+
                 Forms\Components\ToggleButtons::make('status')
                     ->options(StatusType::class)
                     ->default(StatusType::Open)
@@ -44,11 +53,11 @@ class WorkOrderResource extends Resource
                     ->required(),
 
                 Forms\Components\DateTimePicker::make('start_date')
-                    ->label('Start Date')
+                    ->label('Start Datum')
                     ->native(false),
 
                 Forms\Components\DateTimePicker::make('due_date')
-                    ->label('Due Date')
+                    ->label('Eind Datum')
                     ->native(false)
                     ->after('start_date'),
 
@@ -86,54 +95,11 @@ class WorkOrderResource extends Resource
                                     ->dateTime(),
                             ]),
                     ]),
-                Section::make('Time Registration')
-                    ->description('Overview of all time entries for this work order')
+                Section::make('Tijdregistraties')
                     ->schema([
-                        \Filament\Infolists\Components\RepeatableEntry::make('timeEntries')
-                            ->schema([
-                                Grid::make(4)
-                                    ->schema([
-                                        TextEntry::make('user.name')
-                                            ->label('Employee'),
-                                        TextEntry::make('start_time')
-                                            ->dateTime(),
-                                        TextEntry::make('end_time')
-                                            ->dateTime(),
-                                        TextEntry::make('duration')
-                                            ->state(function ($record): string {
-                                                if (!$record->end_time) return 'In progress...';
-
-                                                $duration = Carbon::parse($record->start_time)
-                                                    ->diffInMinutes(Carbon::parse($record->end_time));
-
-                                                $hours = floor($duration / 60);
-                                                $minutes = $duration % 60;
-
-                                                return "{$hours}h {$minutes}m";
-                                            }),
-                                    ]),
-                                TextEntry::make('description')
-                                    ->columnSpanFull(),
-                            ])
-                            ->columns(1),
-
-                        TextEntry::make('total_time')
-                            ->label('Total Time Spent')
-                            ->state(function ($record): string {
-                                $totalMinutes = $record->timeEntries
-                                    ->whereNotNull('end_time')
-                                    ->sum(function ($entry) {
-                                        return Carbon::parse($entry->start_time)
-                                            ->diffInMinutes(Carbon::parse($entry->end_time));
-                                    });
-
-                                $hours = floor($totalMinutes / 60);
-                                $minutes = $totalMinutes % 60;
-
-                                return "{$hours}h {$minutes}m";
-                            })
+                        \Filament\Infolists\Components\View::make('time-entries')
+                            ->view('components.timesheet-table')
                     ]),
-
                 Section::make('System Information')
                     ->collapsed()
                     ->schema([

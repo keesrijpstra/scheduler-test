@@ -18,9 +18,9 @@ class WorkOrder extends Model
         return $this->hasMany(TimeEntry::class, 'workorder_id');
     }
 
-    public function assignedTo()
+    public function assignedUsers()
     {
-        return $this->belongsTo(User::class, 'assigned_to');
+        return $this->belongsToMany(User::class, 'work_order_user');
     }
 
     public function createdBy()
