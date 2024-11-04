@@ -24,6 +24,9 @@ use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\WorkOrderTimeSheetExport;
 use Livewire\Component;
 
 class ListWorkOrderTimeSheet extends Component implements HasForms, HasTable
@@ -155,7 +158,44 @@ class ListWorkOrderTimeSheet extends Component implements HasForms, HasTable
                             ->title('Tijd geregistreerd')
                             ->success()
                             ->send();
-                    })
+                    }),
+                Action::make('export_excel')
+                    ->label('Exporteer Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->size('sm')
+                    ->visible(fn() => auth()->user()->can('export', TimeEntry::class))
+                    ->action(function () {
+                        return Excel::download(
+                            new WorkOrderTimeSheetExport(
+                                $this->workOrder,
+                                $this->getTableFilters()
+                            ),
+                            "werkorder-{$this->workOrder->id}-tijdregistraties.xlsx"
+                        );
+                    }),
+
+                Action::make('export_pdf')
+                    ->label('Exporteer PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->size('sm')
+                    ->action(function () {
+                        // Generate PDF using your preferred package
+                        // For example, using barryvdh/laravel-dompdf
+                        $pdf = PDF::loadView('exports.timesheet', [
+                            'workOrder' => $this->workOrder,
+                            'timeEntries' => (new WorkOrderTimeSheetExport(
+                                $this->workOrder,
+                                $this->getTableFilters()
+                            ))->collection()
+                        ]);
+
+                        return response()->streamDownload(
+                            fn() => print($pdf->output()),
+                            "werkorder-{$this->workOrder->id}-tijdregistraties.pdf"
+                        );
+                    }),
             ])
             ->columns([
                 TextColumn::make('user.name')
